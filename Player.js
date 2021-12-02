@@ -36,18 +36,24 @@ class Player{
             frameRate: 10,
         });
         this.anims.create({
-            key: 'swordspin',
+            key: 'doubleslash',
             frames: this.anims.generateFrameNumbers('hero', {start: 39, end: 51}),
             frameRate: 10,
         });
         this.anims.create({
-            key: 'doubleslash',
+            key: 'swordspin',
             frames: this.anims.generateFrameNumbers('hero', {start: 52, end: 57}),
             frameRate: 10,
         });
-        this.player = this.game.physics.add.sprite(100, 450, 'hero');
-        this.player.setScale(3);
-        //this.cam.follow(this.player);
+        this.anims.create({
+            key: 'killplayer',
+            frames: this.anims.generateFrameNumbers('hero', {start: 62, end: 71}),
+            frameRate: 10,
+        });
+        this.player = this.game.physics.add.sprite(100, 450, 'hero')
+            .setSize(20, 35)
+            .setScale(3);
+        this.game.cameras.main.startFollow(this.player, true);
     };
     changeStatus(status){
         this.currentStatus = status;
@@ -66,11 +72,17 @@ class Player{
     flipPlayerDir(dir){
         this.player.flipX = dir;
     }
+    getPlayerObj(){
+        return this.player;
+    }
     getPlayerDir(){
         return this.player.flipX
     }
     isPlayerGrounded(){
         return this.player.body.touching.down;
+    }
+    addCollisiion(obj1, obj2){
+        this.game.physics.add.collider(obj1, obj2);
     }
     isPlayerAttacking(){
         return this.player.anims.currentAnim.key === 'swordspin' || this.player.anims.currentAnim.key === 'doubleslash' ||
@@ -78,6 +90,12 @@ class Player{
     }
     addPlayerCollider(object){
         this.game.physics.add.collider(this.player, object);
+    }
+    kill(){
+        this.changeStatus({
+           anim: 'killplayer',
+           action: 0
+        });
     }
     update(){
         var cursors = this.game.input.keyboard.createCursorKeys();
@@ -113,6 +131,10 @@ class Player{
                 anim: 'doubleslash',
                 action: this.setPlayerVelocityX(0)
             });
+            /*
+            this.rect = this.game.add.rectangle(this.player.x + 50, this.player.y, 40, 40);
+            this.game.physics.add.existing(this.rect, false);
+             */
         }
         else if (cursors.down.isDown && cursors.space.isDown){
             let velo;
@@ -129,10 +151,10 @@ class Player{
         }
         else if (cursors.space.isDown)
         {
-            this.changeStatus({
-                anim: 'swordspin',
-                action: this.setPlayerVelocityX(0)
-            });
+                this.changeStatus({
+                    anim: 'swordspin',
+                    action: this.setPlayerVelocityX(0)
+                });
         }
         else if (this.isPlayerGrounded() && cursors.down.isDown && !this.isPlayerAttacking())
         {
@@ -169,6 +191,26 @@ class Player{
                 action: 0
             });
         }
+        else if(this.player.anims.isPlaying){
+            if(this.player.anims.currentAnim.key === 'swordspin'){
+                //console.log(this.player.anims.currentFrame.index);
+                if(this.player.anims.currentFrame.index === 3){
+                    var dir;
+                    if(this.getPlayerDir() == 0){
+                        dir = 1;
+                    }
+                    else{
+                        dir = -1;
+                    }
+                    this.rect = this.game.add.rectangle(this.player.x + 50 * dir, this.player.y, 40, 40);
+                    this.game.physics.add.staticGroup(this.rect, false);
+                    this.addCollisiion(this.rect, enemy.getEnemyObj());
+                    this.game.physics.collide(this.rect, enemy.getEnemyObj(), function(){
+                        enemy.kill();
+                    }, null, this);
+                }
+            }
 
+        }
     }
 }
