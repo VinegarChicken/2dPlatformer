@@ -63,10 +63,10 @@ class Enemy{
             });
         }
         else{
-            this.changeStatus({
-                anim: 'die',
-                action: 0
-            });
+            if(this.enemy.anims !== undefined && this.enemy.anims.currentAnim.key === 'die'){
+               //this.enemy.destroy();
+            }
+
         }
     }
 }

@@ -54,6 +54,7 @@ class Player{
             .setSize(20, 35)
             .setScale(3);
         this.game.cameras.main.startFollow(this.player, true);
+        this.rect = 0;
     };
     changeStatus(status){
         this.currentStatus = status;
@@ -96,6 +97,28 @@ class Player{
            anim: 'killplayer',
            action: 0
         });
+    }
+    swordSpinAttack(){
+        var dir;
+        //Saying if something === 0 is the same as saying if it's false
+
+        if(!this.getPlayerDir()){
+            dir = 1;
+        }
+        else{
+            dir = -1;
+        }
+        if(this.player.anims.currentFrame.index === 4){
+            this.rect = this.game.add.rectangle(this.player.x + 50 * dir, this.player.y + 20, 40, 25);
+            this.game.physics.add.staticGroup(this.rect, false);
+            this.addCollisiion(this.rect, enemy.getEnemyObj());
+            if(!enemy.isDead){
+                this.game.physics.collide(this.rect, enemy.getEnemyObj(), function(){
+                    enemy.kill();
+                }, null, this);
+            }
+            this.rect.destroy();
+        }
     }
     update(){
         var cursors = this.game.input.keyboard.createCursorKeys();
@@ -193,22 +216,7 @@ class Player{
         }
         else if(this.player.anims.isPlaying){
             if(this.player.anims.currentAnim.key === 'swordspin'){
-                //console.log(this.player.anims.currentFrame.index);
-                if(this.player.anims.currentFrame.index === 3){
-                    var dir;
-                    if(this.getPlayerDir() == 0){
-                        dir = 1;
-                    }
-                    else{
-                        dir = -1;
-                    }
-                    this.rect = this.game.add.rectangle(this.player.x + 50 * dir, this.player.y, 40, 40);
-                    this.game.physics.add.staticGroup(this.rect, false);
-                    this.addCollisiion(this.rect, enemy.getEnemyObj());
-                    this.game.physics.collide(this.rect, enemy.getEnemyObj(), function(){
-                        enemy.kill();
-                    }, null, this);
-                }
+                this.swordSpinAttack();
             }
 
         }
