@@ -1,7 +1,10 @@
 class Player{
-    constructor(game){
+    constructor(game, x, y){
         this.game = game;
         this.anims = this.game.anims;
+        this.x = x;
+        this.y = y;
+        this.isDead = false;
         this.anims.create({
             key: 'idle',
             frames: this.anims.generateFrameNumbers('hero', {start: 0, end: 3}),
@@ -50,11 +53,11 @@ class Player{
             frames: this.anims.generateFrameNumbers('hero', {start: 62, end: 71}),
             frameRate: 10,
         });
-        this.player = this.game.physics.add.sprite(100, 450, 'hero')
+        this.player = this.game.physics.add.sprite(this.x, this.y, 'hero')
             .setSize(20, 35)
             .setScale(3);
         this.game.cameras.main.startFollow(this.player, true);
-        this.rect = 0;
+        this.rect = this.game.add.rectangle(this.player.x, this.player.y, 0, 0);
     };
     changeStatus(status){
         this.currentStatus = status;
@@ -76,14 +79,20 @@ class Player{
     getPlayerObj(){
         return this.player;
     }
+    getPlayerX(){
+        return this.player.x;
+    }
+    getPlayerY(){
+        return this.player.y;
+    }
+    getPlayerRect(){
+        return this.rect;
+    }
     getPlayerDir(){
         return this.player.flipX
     }
     isPlayerGrounded(){
-        return this.player.body.touching.down;
-    }
-    addCollisiion(obj1, obj2){
-        this.game.physics.add.collider(obj1, obj2);
+        return this.player.body.onFloor();
     }
     isPlayerAttacking(){
         return this.player.anims.currentAnim.key === 'swordspin' || this.player.anims.currentAnim.key === 'doubleslash' ||
@@ -93,6 +102,7 @@ class Player{
         this.game.physics.add.collider(this.player, object);
     }
     kill(){
+        this.isDead = true;
         this.changeStatus({
            anim: 'killplayer',
            action: 0
@@ -100,8 +110,6 @@ class Player{
     }
     swordSpinAttack(){
         var dir;
-        //Saying if something === 0 is the same as saying if it's false
-
         if(!this.getPlayerDir()){
             dir = 1;
         }
@@ -111,114 +119,160 @@ class Player{
         if(this.player.anims.currentFrame.index === 4){
             this.rect = this.game.add.rectangle(this.player.x + 50 * dir, this.player.y + 20, 40, 25);
             this.game.physics.add.staticGroup(this.rect, false);
-            this.addCollisiion(this.rect, enemy.getEnemyObj());
-            if(!enemy.isDead){
-                this.game.physics.collide(this.rect, enemy.getEnemyObj(), function(){
-                    enemy.kill();
-                }, null, this);
-            }
+           //this.rect.destroy();
+        }
+        else{
+            this.rect.destroy();
+        }
+    }
+    slideKick(){
+        var dir;
+        if(!this.getPlayerDir()){
+            dir = 1;
+        }
+        else{
+            dir = -1;
+        }
+        if(this.player.anims.currentFrame.index < 5){
+            this.rect = this.game.add.rectangle(this.player.x + 50 * dir, this.player.y + 40, 40, 25);
+            this.game.physics.add.staticGroup(this.rect, false);
+        }
+        else{
+            this.rect.destroy();
+        }
+    }
+    doubleSlash(){
+        var dir;
+        if(!this.getPlayerDir()){
+            dir = 1;
+        }
+        else{
+            dir = -1;
+        }
+        if(this.player.anims.currentFrame.index === 6){
+            this.rect = this.game.add.rectangle(this.player.x + 50 * dir, this.player.y, 40, 60);
+            this.game.physics.add.staticGroup(this.rect, false);
+        }
+        else if(this.player.anims.currentFrame.index === 12){
+            this.rect = this.game.add.rectangle(this.player.x + 50 * dir, this.player.y, 40, 60);
+            this.game.physics.add.staticGroup(this.rect, false);
+        }
+        else{
             this.rect.destroy();
         }
     }
     update(){
         var cursors = this.game.input.keyboard.createCursorKeys();
-        if (cursors.left.isDown)
-        {
-            if(this.isPlayerGrounded()){
-                this.flipPlayerDir(true);
+        //console.log("Player x coords: " + this.player.x + " Player y coords: " + this.player.y);
+        //scoreText.setPosition(this.player.x, this.player.x);
+        if(!this.isDead){
+            if (cursors.left.isDown)
+            {
+                if(this.isPlayerGrounded()){
+                    this.flipPlayerDir(true);
+                    this.changeStatus({
+                        anim: 'run',
+                        action: this.setPlayerVelocityX(-160)
+                    });
+                }
+                else{
+                    this.setPlayerVelocityX(-160);
+                }
+            }
+            else if (cursors.right.isDown)
+            {
+                if(this.isPlayerGrounded()){
+                    this.flipPlayerDir(false);
+                    this.changeStatus({
+                        anim: 'run',
+                        action: this.setPlayerVelocityX(160)
+                    });
+                }
+                else{
+                    this.setPlayerVelocityX(160);
+                }
+            }
+            else if (cursors.shift.isDown && cursors.space.isDown)
+            {
                 this.changeStatus({
-                    anim: 'run',
-                    action: this.setPlayerVelocityX(-160)
+                    anim: 'doubleslash',
+                    action: this.setPlayerVelocityX(0)
+                });
+                /*
+                this.rect = this.game.add.rectangle(this.player.x + 50, this.player.y, 40, 40);
+                this.game.physics.add.existing(this.rect, false);
+                 */
+            }
+            else if (cursors.down.isDown && cursors.space.isDown){
+                let velo;
+                if(this.getPlayerDir()){
+                    velo = -160;
+                }
+                else{
+                    velo = 160
+                }
+                this.changeStatus({
+                    anim: 'slidekick',
+                    action: this.setPlayerVelocityX(velo)
                 });
             }
-            else{
-                this.setPlayerVelocityX(-160);
-            }
-        }
-        else if (cursors.right.isDown)
-        {
-            if(this.isPlayerGrounded()){
-                this.flipPlayerDir(false);
-                this.changeStatus({
-                    anim: 'run',
-                    action: this.setPlayerVelocityX(160)
-                });
-            }
-            else{
-                this.setPlayerVelocityX(160);
-            }
-        }
-        else if (cursors.shift.isDown && cursors.space.isDown)
-        {
-            this.changeStatus({
-                anim: 'doubleslash',
-                action: this.setPlayerVelocityX(0)
-            });
-            /*
-            this.rect = this.game.add.rectangle(this.player.x + 50, this.player.y, 40, 40);
-            this.game.physics.add.existing(this.rect, false);
-             */
-        }
-        else if (cursors.down.isDown && cursors.space.isDown){
-            let velo;
-            if(this.getPlayerDir()){
-                velo = -160;
-            }
-            else{
-                velo = 160
-            }
-            this.changeStatus({
-                anim: 'slidekick',
-                action: this.setPlayerVelocityX(velo)
-            });
-        }
-        else if (cursors.space.isDown)
-        {
+            else if (cursors.space.isDown)
+            {
                 this.changeStatus({
                     anim: 'swordspin',
                     action: this.setPlayerVelocityX(0)
                 });
-        }
-        else if (this.isPlayerGrounded() && cursors.down.isDown && !this.isPlayerAttacking())
-        {
-            this.changeStatus({
-                anim: 'crouch',
-                action: this.setPlayerVelocityX(0)
-            });
-        }
-        else if (this.isPlayerGrounded() && !this.isPlayerAttacking())
-        {
-            this.changeStatus({
-                anim: 'idle',
-                action: this.setPlayerVelocityX(0)
-            });
-        }
-        if(this.isPlayerGrounded() && this.isPlayerAttacking() && !this.player.anims.isPlaying)
-        {
-            this.changeStatus({
-                anim: 'idle',
-                action: this.setPlayerVelocityX(0)
-            });
-        }
-        if (cursors.up.isDown && this.isPlayerGrounded())
-        {
-            this.changeStatus({
-                anim: 'jump',
-                action: this.setPlayerVelocityY(-270)
-            });
-        }
-        if(!this.player.anims.isPlaying && !this.isPlayerGrounded())
-        {
-            this.changeStatus({
-                anim: 'fall',
-                action: 0
-            });
-        }
-        else if(this.player.anims.isPlaying){
-            if(this.player.anims.currentAnim.key === 'swordspin'){
-                this.swordSpinAttack();
             }
-
+            else if (this.isPlayerGrounded() && cursors.down.isDown && !this.isPlayerAttacking())
+            {
+                this.changeStatus({
+                    anim: 'crouch',
+                    action: this.setPlayerVelocityX(0)
+                });
+            }
+            else if (this.isPlayerGrounded() && !this.isPlayerAttacking())
+            {
+                this.changeStatus({
+                    anim: 'idle',
+                    action: this.setPlayerVelocityX(0)
+                });
+            }
+            if(this.isPlayerGrounded() && this.isPlayerAttacking() && !this.player.anims.isPlaying)
+            {
+                this.changeStatus({
+                    anim: 'idle',
+                    action: this.setPlayerVelocityX(0)
+                });
+            }
+            if (cursors.up.isDown && this.isPlayerGrounded())
+            {
+                this.changeStatus({
+                    anim: 'jump',
+                    action: this.setPlayerVelocityY(-270)
+                });
+            }
+            if(!this.player.anims.isPlaying && !this.isPlayerGrounded())
+            {
+                this.changeStatus({
+                    anim: 'fall',
+                    action: 0
+                });
+            }
+            else if(this.player.anims.isPlaying){
+                if(this.player.anims.currentAnim.key === 'swordspin'){
+                    this.swordSpinAttack();
+                }
+                if(this.player.anims.currentAnim.key === 'slidekick'){
+                    this.slideKick();
+                }
+                if(this.player.anims.currentAnim.key === 'doubleslash'){
+                    this.doubleSlash();
+                }
+            }
         }
+        else if(this.player.anims !== undefined && !this.player.anims.isPlaying){
+            this.player.destroy();
+        }
+
     }
 }
