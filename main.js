@@ -7,9 +7,8 @@ var worm;
 var score = 0;
 var scoreText;
 
-//https://edermunizz.itch.io/free-pixel-art-plataformer-painted-style
-//https://free-game-assets.itch.io/free-enemy-sprite-sheets-pixel-art
 //https://luizmelo.itch.io/fire-worm
+//https://anokolisa.itch.io/castle-prison
 
 var config = {
     type: Phaser.AUTO,
@@ -47,19 +46,20 @@ function preload()
 
 function create()
 {
-    this.add.image(300, 400, 'bg').setScale(3.0);
+    //this.add.image(300, 400, 'bg').setScale(3.0);
     map = this.add.tilemap('tileset_json');
     const tileset = map.addTilesetImage('CastleTileset', 'CastleTileset_image');
+    map.createStaticLayer('BgLayer', tileset);
     tile_layer = map.createStaticLayer('Level 1', tileset);
     tile_layer.setPosition(-400, -268);
     tile_layer.setCollisionByExclusion([-1]);
 
     ///Level Stuff
-    player = new Player(this, 100, 150);
+    player = new Player(this, 500, 50);
     //enemy = new Enemy(this, 638, 303);
-    enemy2 = new Enemy(this, 320, 150);
+    enemy2 = new Enemy(this, 1020, 50);
     //enemy3 = new Enemy(this, 350, 250);
-    nightborne = new NightBorneEnemy(this, 638, 53);
+    nightborne = new NightBorneEnemy(this, 1638, 53);
     //worm = new WormEnemy(this, 0, 0);
     player.addPlayerCollider(tile_layer);
     //scoreText = this.add.text(0, 0, 'Score: 0', { fontSize: '32px', fill: '#FFF' });
@@ -69,14 +69,9 @@ function update()
 {
    // enemy.update();
     player.update();
-    if(!player.isDead){
-        enemy2.update();
-        //enemy3.update();
-        nightborne.update();
-        //console.log(player.getPlayerY());
-        //worm.update();
-    }
-    else{
-
-    }
+    enemy2.update();
+    //enemy3.update();
+    nightborne.update();
+    //console.log(player.getPlayerY());
+    //worm.update();
 }

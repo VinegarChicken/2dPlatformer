@@ -32,7 +32,10 @@ class Enemy{
             .setSize(25, 18)
             .setOffset(4, 7);
         this.isDead = false;
-        this.addCollider(player.getPlayerObj());
+       // this.addCollider(player.getPlayerObj());
+        this.game.physics.overlap(this.enemy, player.getPlayerObj(), function(){
+            player.kill();
+        }, null, this);
         this.addCollider(tile_layer);
     }
     changeStatus(status){
@@ -351,7 +354,9 @@ class NightBorneEnemy{
             .setSize(26, 30)
             .setOffset(30, 30);
         this.isDead = false;
-        this.addCollider(player.getPlayerObj());
+        this.game.physics.overlap(this.enemy, player.getPlayerObj(), function(){
+            player.kill();
+        }, null, this);
         this.addCollider(tile_layer);
     }
     changeStatus(status){

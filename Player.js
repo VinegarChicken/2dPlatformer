@@ -50,7 +50,7 @@ class Player{
         });
         this.anims.create({
             key: 'killplayer',
-            frames: this.anims.generateFrameNumbers('hero', {start: 62, end: 71}),
+            frames: this.anims.generateFrameNumbers('hero', {start: 59, end: 68}),
             frameRate: 10,
         });
         this.player = this.game.physics.add.sprite(this.x, this.y, 'hero')
@@ -163,7 +163,7 @@ class Player{
     }
     update(){
         var cursors = this.game.input.keyboard.createCursorKeys();
-        //console.log("Player x coords: " + this.player.x + " Player y coords: " + this.player.y);
+        console.log("Player x coords: " + this.player.x + " Player y coords: " + this.player.y);
         //scoreText.setPosition(this.player.x, this.player.x);
         if(!this.isDead){
             if (cursors.left.isDown)
