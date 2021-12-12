@@ -115,7 +115,7 @@ class Enemy{
         if(!this.isDead){
            this.healthBar();
             if(this.enemy.x > player.getPlayerX()){
-                if(this.enemy.x - player.getPlayerX() < 150){
+                if(this.enemy.x - player.getPlayerX() < 450){
                     this.changeStatus({
                         anim: 'atk',
                         action: 0
@@ -146,7 +146,7 @@ class Enemy{
 
             }
             else{
-                if(!player.getPlayerX() - this.enemy.x < 150){
+                if(!player.getPlayerX() - this.enemy.x < 450){
                     this.changeStatus({
                         anim: 'atk',
                         action: 0
@@ -244,11 +244,11 @@ class Enemy{
                 }
             }
         }
-        else if(this.isDead){
-            this.damageFly();
-        }
         else if (this.enemy.anims !== undefined && !this.enemy.anims.isPlaying){
             this.enemy.destroy();
+        }
+        if(this.enemy.body !== undefined && this.isDead){
+            this.damageFly();
         }
     }
 }
@@ -332,7 +332,7 @@ class WormEnemy{
     update(){
         if(!this.isDead){
             if(this.enemy.x > player.getPlayerX()){
-                if(this.enemy.x - player.getPlayerX() < 150){
+                if(this.enemy.x - player.getPlayerX() < 450){
                     this.changeStatus({
                         anim: 'wormidle',
                         action: 0
@@ -363,7 +363,7 @@ class WormEnemy{
 
             }
             else{
-                if(!player.getPlayerX() - this.enemy.x < 150){
+                if(!player.getPlayerX() - this.enemy.x < 450){
                     this.changeStatus({
                         anim: 'wormidle',
                         action: 0
@@ -552,7 +552,7 @@ class NightBorneEnemy{
         if(!this.isDead){
             this.healthBar();
             if(this.enemy.x > player.getPlayerX()){
-                if(this.enemy.x - player.getPlayerX() < 150){
+                if(this.enemy.x - player.getPlayerX() < 450){
                     this.changeStatus({
                         anim: 'nbatk',
                         action: 0
@@ -583,7 +583,7 @@ class NightBorneEnemy{
 
             }
             else{
-                if(!player.getPlayerX() - this.enemy.x < 150){
+                if(!player.getPlayerX() - this.enemy.x < 450){
                     this.changeStatus({
                         anim: 'nbatk',
                         action: 0
@@ -617,11 +617,11 @@ class NightBorneEnemy{
                 this.game.physics.overlap(this.enemy, player.rect, function(){
                     if(!this.countedhit && this.health > 0){
                         switch(player.getCurrentAnim()){
-                            case 'swordspin':
-                                this.health -= 50;
-                                break;
                             case 'slidekick':
                                 this.health -= 25;
+                                break;
+                            case 'swordspin':
+                                this.health -= 50;
                                 break;
                             case 'doubleslash':
                                 this.health -= 75;
@@ -648,7 +648,7 @@ class NightBorneEnemy{
             }
             this.game.physics.collide(this.enemy, player.getPlayerObj(), function(){
                 if(!this.countedplayerhit && player.health > 0){
-                    player.health -= 40;
+                    player.health -= 90;
                     this.countedplayerhit = true;
                     this.isplayerHit = true;
                 }
@@ -678,7 +678,10 @@ class NightBorneEnemy{
                 this.attack();
             }
         }
-        else if(this.isDead){
+        else if (this.enemy.anims !== undefined && !this.enemy.anims.isPlaying){
+            this.enemy.destroy();
+        }
+        if(this.enemy.body !== undefined && this.isDead){
             this.hitframectr++;
             if(this.hitframectr < 30){
                 this.damageFly();
@@ -686,9 +689,6 @@ class NightBorneEnemy{
             else{
                 this.setEnemyVelocityX(0);
             }
-        }
-        else if (this.enemy.anims !== undefined && !this.enemy.anims.isPlaying){
-            this.enemy.destroy();
         }
     }
 }

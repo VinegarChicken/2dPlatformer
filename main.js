@@ -8,8 +8,10 @@ var score = 0;
 var scoreText;
 var isGameFinished;
 
-//https://luizmelo.itch.io/fire-worm
 //https://anokolisa.itch.io/castle-prison
+//https://rvros.itch.io/animated-pixel-hero
+//https://creativekind.itch.io/nightborne-warrior
+//https://rvros.itch.io/pixel-art-animated-slime
 
 var config = {
     type: Phaser.AUTO,
@@ -57,7 +59,7 @@ function create()
 
     ///Level Stuff
     player = new Player(this, 500, 50);
-    enemy = new Enemy(this, 638, 50);
+    enemy = new Enemy(this, 1038, 50);
   //  enemy2 = new Enemy(this, 1020, 50);
   //  enemy3 = new Enemy(this, 350, 50);
     nightborne = new NightBorneEnemy(this, 1638, 53);

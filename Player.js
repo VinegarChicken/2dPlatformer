@@ -181,7 +181,7 @@ class Player{
     }
     update(){
         var cursors = this.game.input.keyboard.createCursorKeys();
-        console.log("Player x coords: " + this.player.x + " Player y coords: " + this.player.y);
+       // console.log("Player x coords: " + this.player.x + " Player y coords: " + this.player.y);
         //scoreText.setPosition(this.player.x, this.player.x);
         if(!this.isDead){
             this.healthBar();
@@ -295,12 +295,5 @@ class Player{
         else if(this.player.anims !== undefined && !this.player.anims.isPlaying){
             this.player.destroy();
         }
-        else{
-           // this.game.cameras.Scene2D.Effects.Fade()
-           // this.game.cameras.main.ignore(enemy.getEnemyObj());
-            ///console.log("Player is dead.");
-            //this.game.cameras.main.flash(2000);
-        }
-
     }
 }
