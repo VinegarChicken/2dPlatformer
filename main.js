@@ -6,6 +6,7 @@ var tile_layer;
 var worm;
 var score = 0;
 var scoreText;
+var isGameFinished;
 
 //https://luizmelo.itch.io/fire-worm
 //https://anokolisa.itch.io/castle-prison
@@ -56,22 +57,27 @@ function create()
 
     ///Level Stuff
     player = new Player(this, 500, 50);
-    //enemy = new Enemy(this, 638, 303);
-    enemy2 = new Enemy(this, 1020, 50);
-    //enemy3 = new Enemy(this, 350, 250);
+    enemy = new Enemy(this, 638, 50);
+  //  enemy2 = new Enemy(this, 1020, 50);
+  //  enemy3 = new Enemy(this, 350, 50);
     nightborne = new NightBorneEnemy(this, 1638, 53);
     //worm = new WormEnemy(this, 0, 0);
     player.addPlayerCollider(tile_layer);
-    //scoreText = this.add.text(0, 0, 'Score: 0', { fontSize: '32px', fill: '#FFF' });
+    scoreText = this.add.text(player.getPlayerX(), player.getPlayerY(), 'Score: 0', { fontSize: '32px', fill: '#FFF' });
 }
 
 function update()
 {
-   // enemy.update();
+    enemy.update();
     player.update();
-    enemy2.update();
-    //enemy3.update();
+  // enemy2.update();
+   // enemy3.update();
     nightborne.update();
     //console.log(player.getPlayerY());
     //worm.update();
+    scoreText.setPosition(player.getPlayerX() + 200, player.getPlayerY() - 280);
+    if(player.isDead && !isGameFinished){
+        this.cameras.main.fade(1000);
+        isGameFinished = true;
+    }
 }

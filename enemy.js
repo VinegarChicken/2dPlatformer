@@ -7,8 +7,16 @@ class Enemy{
         this.anims = this.game.anims;
         this.x = x;
         this.y = y;
-        this.hits = 3;
+        this.health = 100;
+        //Is the enemy being hit
         this.countedhit = false;
+        this.isHit = false;
+        this.hitframectr = 0;
+
+        //Is the player being hit TODO: do player stuff in player class
+        this.countedplayerhit = false;
+        this.isplayerHit = false;
+        this.playerhitframectr = 0;
         this.anims.create({
             key: 'idle2',
             frames: this.anims.generateFrameNumbers('slime', {start: 0, end: 6}),
@@ -37,6 +45,14 @@ class Enemy{
             player.kill();
         }, null, this);
         this.addCollider(tile_layer);
+        this.healthbar = this.game.add.graphics()
+            .fillStyle(0x43d113, 1.0)
+            .fillRect(0, 0, 100, 20);
+        this.healthbarcont = this.game.add.graphics()
+            .lineStyle(5, 0xd11313, 1.0)
+            .fillStyle(0xFFFFFF, 1.0)
+            .strokeRect(0, 0, 100, 20);
+
     }
     changeStatus(status){
         this.currentStatus = status;
@@ -58,6 +74,9 @@ class Enemy{
     flipEnemyrDir(dir){
         this.enemy.flipX = dir;
     }
+    getEnemyDir(){
+        return this.enemy.flipX;
+    }
     getEnemyObj(){
         return this.enemy;
     }
@@ -70,9 +89,31 @@ class Enemy{
             anim: 'die',
             action: this.setEnemyVelocityX(0)
         });
+        score += 30;
+        scoreText.text = "Score: " + score;
+        this.healthbar.destroy();
+        this.healthbarcont.destroy();
+    }
+    damageFly(){
+        if(player.getPlayerX() > this.enemy.x){
+            this.setEnemyVelocityX(-500);
+            this.setEnemyVelocityY(-50);
+        }
+        else if(this.enemy.x > player.getPlayerX()){
+            this.setEnemyVelocityX(500);
+            this.setEnemyVelocityY(-50);
+        }
+    }
+    healthBar(){
+        this.healthbar.x = this.enemy.x - 50;
+        this.healthbar.y = this.enemy.y - 50;
+        this.healthbarcont.x = this.enemy.x - 50;
+        this.healthbarcont.y = this.enemy.y - 50;
+        this.healthbar.scaleX = this.health / 100;
     }
     update(){
         if(!this.isDead){
+           this.healthBar();
             if(this.enemy.x > player.getPlayerX()){
                 if(this.enemy.x - player.getPlayerX() < 150){
                     this.changeStatus({
@@ -137,12 +178,74 @@ class Enemy{
             }
             if(player.rect !== undefined){
                 this.game.physics.overlap(this.enemy, player.rect, function(){
-                    this.kill();
+                    if(!this.countedhit && this.health > 0){
+                        switch(player.getCurrentAnim()){
+                            case 'swordspin':
+                                this.health -= 50;
+                                break;
+                            case 'slidekick':
+                                this.health -= 25;
+                                break;
+                            case 'doubleslash':
+                                this.health -= 75;
+                                break;
+                        }
+                        this.countedhit = true;
+                        this.isHit = true;
+                    }
+                    else if(this.health <= 0){
+                        this.kill();
+                    }
                 }, null, this);
             }
+            if(this.isHit){
+                this.hitframectr++;
+                if(this.hitframectr < 30 && this.health > 0){
+                   this.damageFly();
+                }
+                else{
+                    this.hitframectr = 0;
+                    this.isHit = false;
+                    this.countedhit = false;
+                }
+            }
+            /*
             this.game.physics.collide(this.enemy, player.getPlayerObj(), function(){
-                player.kill();
+                //player.kill();
             }, null, this);
+
+             */
+            this.game.physics.collide(this.enemy, player.getPlayerObj(), function(){
+                if(!this.countedplayerhit && player.health > 0){
+                    player.health -= 40;
+                    this.countedplayerhit = true;
+                    this.isplayerHit = true;
+                }
+                else if(player.health <= 0){
+                    player.kill();
+                }
+            }, null, this);
+            if(this.isplayerHit){
+                this.playerhitframectr++;
+                if(this.playerhitframectr < 30 && player.health > 0){
+                    if(player.getPlayerX() > this.enemy.x){
+                        player.setPlayerVelocityX(500);
+                        player.setPlayerVelocityY(-50);
+                    }
+                    else if(this.enemy.x > player.getPlayerX()){
+                        player.setPlayerVelocityX(-500);
+                        player.setPlayerVelocityY(-50);
+                    }
+                }
+                else{
+                    this.playerhitframectr = 0;
+                    this.isplayerHit = false;
+                    this.countedplayerhit = false;
+                }
+            }
+        }
+        else if(this.isDead){
+            this.damageFly();
         }
         else if (this.enemy.anims !== undefined && !this.enemy.anims.isPlaying){
             this.enemy.destroy();
@@ -315,9 +418,21 @@ class NightBorneEnemy{
         this.anims = this.game.anims;
         this.x = x;
         this.y = y;
-        this.hits = 5;
+        this.health = 200;
         this.score = 0;
-        this.scoreTxt;
+        this.health = 100;
+        this.countedhit = false;
+        this.isHit = false;
+        this.hitframectr = 0;
+
+        this.healthbar = this.game.add.graphics()
+            .fillStyle(0x43d113, 1.0)
+            .fillRect(0, 0, 100, 20);
+        this.healthbarcont = this.game.add.graphics()
+            .lineStyle(5, 0xd11313, 1.0)
+            .fillStyle(0xFFFFFF, 1.0)
+            .strokeRect(0, 0, 100, 20);
+
         this.anims.create({
             key: 'nbidle',
             frames: this.anims.generateFrameNumbers('nightborne', {start: 0, end: 8}),
@@ -373,6 +488,16 @@ class NightBorneEnemy{
     flipEnemyrDir(dir){
         this.enemy.flipX = dir;
     }
+    damageFly(){
+        if(player.getPlayerX() > this.enemy.x){
+            this.setEnemyVelocityX(-200);
+            this.setEnemyVelocityY(-50);
+        }
+        else if(this.enemy.x > player.getPlayerX()){
+            this.setEnemyVelocityX(200);
+            this.setEnemyVelocityY(-50);
+        }
+    }
     isEnemyGrounded(){
         return this.enemy.body.onFloor();
     }
@@ -394,6 +519,17 @@ class NightBorneEnemy{
             anim: 'nbdie',
             action: this.setEnemyVelocityX(0)
         });
+        score += 90;
+        scoreText.text = "Score: " + score;
+        this.healthbar.destroy();
+        this.healthbarcont.destroy();
+    }
+    healthBar(){
+        this.healthbar.x = this.enemy.x - 50;
+        this.healthbar.y = this.enemy.y - 50;
+        this.healthbarcont.x = this.enemy.x - 50;
+        this.healthbarcont.y = this.enemy.y - 50;
+        this.healthbar.scaleX = this.health / 100;
     }
     attack(){
         var dir;
@@ -414,6 +550,7 @@ class NightBorneEnemy{
     }
     update(){
         if(!this.isDead){
+            this.healthBar();
             if(this.enemy.x > player.getPlayerX()){
                 if(this.enemy.x - player.getPlayerX() < 150){
                     this.changeStatus({
@@ -476,16 +613,78 @@ class NightBorneEnemy{
                 }
 
             }
-            if(player.rect !== undefined){
+            if(player.rect !== undefined && player.anims !== undefined){
                 this.game.physics.overlap(this.enemy, player.rect, function(){
-                    this.kill();
+                    if(!this.countedhit && this.health > 0){
+                        switch(player.getCurrentAnim()){
+                            case 'swordspin':
+                                this.health -= 50;
+                                break;
+                            case 'slidekick':
+                                this.health -= 25;
+                                break;
+                            case 'doubleslash':
+                                this.health -= 75;
+                                break;
+                        }
+                        this.countedhit = true;
+                        this.isHit = true;
+                    }
+                    else if(this.health <= 0){
+                        this.kill();
+                    }
                 }, null, this);
             }
+            if(this.isHit){
+                this.hitframectr++;
+                if(this.hitframectr < 30 && this.health > 0){
+                    this.damageFly();
+                }
+                else{
+                    this.hitframectr = 0;
+                    this.isHit = false;
+                    this.countedhit = false;
+                }
+            }
             this.game.physics.collide(this.enemy, player.getPlayerObj(), function(){
-                player.kill();
+                if(!this.countedplayerhit && player.health > 0){
+                    player.health -= 40;
+                    this.countedplayerhit = true;
+                    this.isplayerHit = true;
+                }
+                else if(player.health <= 0){
+                    player.kill();
+                }
             }, null, this);
+            if(this.isplayerHit){
+                this.playerhitframectr++;
+                if(this.playerhitframectr < 30 && player.health > 0){
+                    if(player.getPlayerX() > this.enemy.x){
+                        player.setPlayerVelocityX(500);
+                        player.setPlayerVelocityY(-50);
+                    }
+                    else if(this.enemy.x > player.getPlayerX()){
+                        player.setPlayerVelocityX(-500);
+                        player.setPlayerVelocityY(-50);
+                    }
+                }
+                else{
+                    this.playerhitframectr = 0;
+                    this.isplayerHit = false;
+                    this.countedplayerhit = false;
+                }
+            }
             if(this.enemy.anims.currentAnim.key === 'nbatk'){
                 this.attack();
+            }
+        }
+        else if(this.isDead){
+            this.hitframectr++;
+            if(this.hitframectr < 30){
+                this.damageFly();
+            }
+            else{
+                this.setEnemyVelocityX(0);
             }
         }
         else if (this.enemy.anims !== undefined && !this.enemy.anims.isPlaying){

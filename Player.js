@@ -5,6 +5,7 @@ class Player{
         this.x = x;
         this.y = y;
         this.isDead = false;
+        this.health = 400;
         this.anims.create({
             key: 'idle',
             frames: this.anims.generateFrameNumbers('hero', {start: 0, end: 3}),
@@ -41,12 +42,12 @@ class Player{
         this.anims.create({
             key: 'doubleslash',
             frames: this.anims.generateFrameNumbers('hero', {start: 39, end: 51}),
-            frameRate: 10,
+            frameRate: 13,
         });
         this.anims.create({
             key: 'swordspin',
             frames: this.anims.generateFrameNumbers('hero', {start: 52, end: 57}),
-            frameRate: 10,
+            frameRate: 13,
         });
         this.anims.create({
             key: 'killplayer',
@@ -58,6 +59,14 @@ class Player{
             .setScale(3);
         this.game.cameras.main.startFollow(this.player, true);
         this.rect = this.game.add.rectangle(this.player.x, this.player.y, 0, 0);
+
+        this.healthbar = this.game.add.graphics()
+            .fillStyle(0x43d113, 1.0)
+            .fillRect(0, 0, 400, 50);
+        this.healthbarcont = this.game.add.graphics()
+            .lineStyle(5, 0xd11313, 1.0)
+            .fillStyle(0xFFFFFF, 1.0)
+            .strokeRect(0, 0, 400, 50);
     };
     changeStatus(status){
         this.currentStatus = status;
@@ -101,6 +110,9 @@ class Player{
     addPlayerCollider(object){
         this.game.physics.add.collider(this.player, object);
     }
+    getCurrentAnim(){
+        return this.player.anims.currentAnim.key;
+    }
     kill(){
         this.isDead = true;
         this.changeStatus({
@@ -119,7 +131,6 @@ class Player{
         if(this.player.anims.currentFrame.index === 4){
             this.rect = this.game.add.rectangle(this.player.x + 50 * dir, this.player.y + 20, 40, 25);
             this.game.physics.add.staticGroup(this.rect, false);
-           //this.rect.destroy();
         }
         else{
             this.rect.destroy();
@@ -161,11 +172,19 @@ class Player{
             this.rect.destroy();
         }
     }
+    healthBar(){
+        this.healthbar.x = this.player.x - 340;
+        this.healthbar.y = this.player.y - 250;
+        this.healthbarcont.x = this.player.x - 340;
+        this.healthbarcont.y = this.player.y - 250;
+        this.healthbar.scaleX = this.health / 400;
+    }
     update(){
         var cursors = this.game.input.keyboard.createCursorKeys();
         console.log("Player x coords: " + this.player.x + " Player y coords: " + this.player.y);
         //scoreText.setPosition(this.player.x, this.player.x);
         if(!this.isDead){
+            this.healthBar();
             if (cursors.left.isDown)
             {
                 if(this.isPlayerGrounded()){
@@ -262,16 +281,25 @@ class Player{
                 if(this.player.anims.currentAnim.key === 'swordspin'){
                     this.swordSpinAttack();
                 }
-                if(this.player.anims.currentAnim.key === 'slidekick'){
+               else if(this.player.anims.currentAnim.key === 'slidekick'){
                     this.slideKick();
                 }
-                if(this.player.anims.currentAnim.key === 'doubleslash'){
+                else if(this.player.anims.currentAnim.key === 'doubleslash'){
                     this.doubleSlash();
+                }
+                else{
+                    this.rect.destroy();
                 }
             }
         }
         else if(this.player.anims !== undefined && !this.player.anims.isPlaying){
             this.player.destroy();
+        }
+        else{
+           // this.game.cameras.Scene2D.Effects.Fade()
+           // this.game.cameras.main.ignore(enemy.getEnemyObj());
+            ///console.log("Player is dead.");
+            //this.game.cameras.main.flash(2000);
         }
 
     }
